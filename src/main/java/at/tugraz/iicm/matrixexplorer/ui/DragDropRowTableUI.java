@@ -76,7 +76,7 @@ public class DragDropRowTableUI extends BasicTableUI {
                     rowName.set(toRow, rowName.get(fromRow));
                     rowName.set(fromRow,temp_rowName);
 
-                    for (int i = 0; i < model.getColumnCount(); i++) {
+                    for (int i = 0; i < model.getColumnCount() - 1; i++) {
                         Object fromValue = model.getValueAt(fromRow, i);
                         Object toValue = model.getValueAt(toRow, i);
 
