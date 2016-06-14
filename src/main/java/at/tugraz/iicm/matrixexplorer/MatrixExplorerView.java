@@ -57,7 +57,7 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	public MatrixExplorerView(SingleFrameApplication app) {
 		super(app);
-		
+
 		initComponents();
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_CIRCLES);
 
@@ -467,6 +467,7 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	@Action
 	public void on2DSort() {
+
 		getApplication().getContext().getTaskService().execute(new Task(getApplication()) {
 
 			@Override
@@ -487,7 +488,6 @@ public class MatrixExplorerView extends FrameView {
 			}
 
 		});
-
 	}
 
 	/**
@@ -514,7 +514,7 @@ public class MatrixExplorerView extends FrameView {
 		}
 
 		int rowHeight = ((int) Math.ceil(currentHeight) / (rowCount + 1));
-		
+
 		if (rowHeight > minRowHeight) {
 
 			jTable.setRowHeight(rowHeight);
@@ -522,13 +522,16 @@ public class MatrixExplorerView extends FrameView {
 			// set table header row height
 			JTableHeader header = jTable.getTableHeader();
 			Dimension prefSize = header.getPreferredSize();
-			prefSize.height = rowHeight / 2;
+
+			int headerHeight = minRowHeight;
+			if (rowHeight / 2 > minRowHeight) {
+				headerHeight = rowHeight / 2;
+			}
+
+			prefSize.height = headerHeight;
 			header.setPreferredSize(prefSize);
 
-			if (prefSize.height >= minRowHeight) {
-				jTable.setTableHeader(header);
-			}
-			
+			jTable.setTableHeader(header);
 			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
 			// set font size to fit row size
