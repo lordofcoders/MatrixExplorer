@@ -33,6 +33,8 @@ import javax.swing.JTable;
 
 import at.tugraz.iicm.matrixexplorer.ui.BertinVisualsGenerator;
 import at.tugraz.iicm.matrixexplorer.ui.DragDropRowTableUI;
+import at.tugraz.iicm.matrixexplorer.ui.MainComponentListener;
+
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout;
 
@@ -55,7 +57,7 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	public MatrixExplorerView(SingleFrameApplication app) {
 		super(app);
-
+		
 		initComponents();
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_CIRCLES);
 
@@ -121,6 +123,7 @@ public class MatrixExplorerView extends FrameView {
 
 		// set the row DnD works.
 		jTable.setUI(new DragDropRowTableUI());
+		jScrollPane1.addComponentListener(new MainComponentListener(this));
 	}
 
 	/**
@@ -497,7 +500,7 @@ public class MatrixExplorerView extends FrameView {
 		((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
 	}
 
-	private void fitTableToViewportSize() {
+	public void fitTableToViewportSize() {
 
 		jTable.setFillsViewportHeight(true);
 
