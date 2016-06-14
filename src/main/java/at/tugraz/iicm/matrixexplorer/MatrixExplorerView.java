@@ -14,19 +14,27 @@ import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.FrameView;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskMonitor;
+
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Timer;
+import javax.swing.table.JTableHeader;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+
 import at.tugraz.iicm.matrixexplorer.ui.BertinVisualsGenerator;
 import at.tugraz.iicm.matrixexplorer.ui.DragDropRowTableUI;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout;
 
 /**
  * The application's main frame.
@@ -37,6 +45,7 @@ public class MatrixExplorerView extends FrameView {
 
 	private MatrixManager matrixManager;
 	private final static Logger logger = Logger.getLogger(MatrixExplorerView.class.getSimpleName());
+	private final static int minRowHeight = 20;
 
 	/**
 	 * Construct the frame for the application.
@@ -61,20 +70,20 @@ public class MatrixExplorerView extends FrameView {
 				statusMessageLabel.setText("");
 			}
 		});
-		
+
 		messageTimer.setRepeats(false);
 		int busyAnimationRate = resourceMap.getInteger("StatusBar.busyAnimationRate");
 		for (int i = 0; i < busyIcons.length; i++) {
 			busyIcons[i] = resourceMap.getIcon("StatusBar.busyIcons[" + i + "]");
 		}
-		
+
 		busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
 				statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
 			}
 		});
-		
+
 		idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
 		statusAnimationLabel.setIcon(idleIcon);
 		progressBar.setVisible(false);
@@ -140,16 +149,20 @@ public class MatrixExplorerView extends FrameView {
 		mainPanel = new javax.swing.JPanel();
 		jScrollPane1 = new javax.swing.JScrollPane();
 		jTable = new MatrixTable();
+		jTable.setFillsViewportHeight(true);
 		menuBar = new javax.swing.JMenuBar();
+
 		javax.swing.JMenu fileMenu = new javax.swing.JMenu();
 		jMenuItem1 = new javax.swing.JMenuItem();
 		jMenuItem4 = new javax.swing.JMenuItem();
 		javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
+
 		jMenu1 = new javax.swing.JMenu();
 		buttonDisplayRawData = new javax.swing.JRadioButtonMenuItem();
 		buttonDisplayCircles = new javax.swing.JRadioButtonMenuItem();
 		jRadioButtonMenuItem1 = new javax.swing.JRadioButtonMenuItem();
 		jRadioButtonMenuItem2 = new javax.swing.JRadioButtonMenuItem();
+
 		buttonDo2DSort = new javax.swing.JMenu();
 		jMenuItem2 = new javax.swing.JMenuItem();
 		jMenuItem3 = new javax.swing.JMenuItem();
@@ -171,12 +184,15 @@ public class MatrixExplorerView extends FrameView {
 		jScrollPane1.setViewportView(jTable);
 
 		javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
-		mainPanel.setLayout(mainPanelLayout);
 		mainPanelLayout
-				.setHorizontalGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-						.addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE));
-		mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE));
+				.setHorizontalGroup(mainPanelLayout.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING,
+						mainPanelLayout.createSequentialGroup().addContainerGap()
+								.addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+								.addContainerGap()));
+		mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(Alignment.TRAILING, mainPanelLayout.createSequentialGroup().addContainerGap()
+						.addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)));
+		mainPanel.setLayout(mainPanelLayout);
 
 		menuBar.setName("menuBar"); // NOI18N
 
@@ -315,7 +331,10 @@ public class MatrixExplorerView extends FrameView {
 	}// </editor-fold>//GEN-END:initComponents
 
 	private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
-		// TODO add your handling code here:
+
+		fitTableToViewportSize();
+		jTable.updateUI();
+
 	}// GEN-LAST:event_jMenuItem1ActionPerformed
 
 	/**
@@ -324,13 +343,17 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	@Action
 	public void onLoadButton() {
+
 		JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.setDialogTitle("Select Data File");
 		chooser.showOpenDialog(null);
+
 		File file = chooser.getSelectedFile();
+
 		if (file != null) {
+
 			String f = file.getAbsolutePath();
 			try {
 
@@ -338,14 +361,19 @@ public class MatrixExplorerView extends FrameView {
 				matrixManager = new MatrixManager(matrix);
 				((MatrixTableModel) jTable.getModel()).setMatrix(matrixManager.getMatrix());
 				((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
-				BertinVisualsGenerator ber = new BertinVisualsGenerator();
-				ber.drawGraphics(matrix);
-				//jTable.setUI(new DragDropRowTableUI());
+
+				// BertinVisualsGenerator ber = new BertinVisualsGenerator();
+				// ber.drawGraphics(matrix);
+
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(mainPanel, "Could not read input data from file " + f,
 						"Error in reading input data", JOptionPane.ERROR_MESSAGE);
 				logger.log(Level.SEVERE, "error in reading input data from file " + f);
 			}
+
+			fitTableToViewportSize();
+			jTable.updateUI();
+			jTable.setUI(new DragDropRowTableUI());
 		}
 	}
 
@@ -379,8 +407,10 @@ public class MatrixExplorerView extends FrameView {
 	@Action
 	public void onDisplayDataAsRaw() {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_NUMBERS);
+
+		fitTableToViewportSize();
 		jTable.updateUI();
-		
+
 		// set the row DnD works.
 		jTable.setUI(new DragDropRowTableUI());
 	}
@@ -392,8 +422,10 @@ public class MatrixExplorerView extends FrameView {
 	@Action
 	public void onDisplayDataAsCircles() {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_CIRCLES);
+
+		fitTableToViewportSize();
 		jTable.updateUI();
-		
+
 		// set the row DnD works.
 		jTable.setUI(new DragDropRowTableUI());
 	}
@@ -404,10 +436,12 @@ public class MatrixExplorerView extends FrameView {
 	@Action
 	public void onDisplayDataAsBars() {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_BARS);
+
+		fitTableToViewportSize();
 		jTable.updateUI();
-		
+
 		// set the row DnD works.
-		jTable.setUI(new DragDropRowTableUI());	
+		jTable.setUI(new DragDropRowTableUI());
 	}
 
 	/**
@@ -417,10 +451,12 @@ public class MatrixExplorerView extends FrameView {
 	@Action
 	public void onDisplayAsBertinsVisuals() {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_BERTINS_VISUALS);
+
+		fitTableToViewportSize();
 		jTable.updateUI();
-		
+
 		// set the row DnD works.
-		jTable.setUI(new DragDropRowTableUI());	
+		jTable.setUI(new DragDropRowTableUI());
 	}
 
 	/**
@@ -429,7 +465,7 @@ public class MatrixExplorerView extends FrameView {
 	@Action
 	public void on2DSort() {
 		getApplication().getContext().getTaskService().execute(new Task(getApplication()) {
-			
+
 			@Override
 			protected Object doInBackground() throws Exception {
 				// setProgress(0, 0, 0);
@@ -459,6 +495,46 @@ public class MatrixExplorerView extends FrameView {
 		matrixManager.resetMatrix();
 		((MatrixTableModel) jTable.getModel()).setMatrix(matrixManager.getMatrix());
 		((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
+	}
+
+	private void fitTableToViewportSize() {
+
+		jTable.setFillsViewportHeight(true);
+
+		// calculate ideal row height for current window size
+		Rectangle bounds = jScrollPane1.getBounds();
+
+		double currentHeight = bounds.getHeight();
+		int rowCount = jTable.getModel().getRowCount();
+		if (rowCount <= 0) {
+			return;
+		}
+
+		int rowHeight = ((int) Math.ceil(currentHeight) / (rowCount + 1));
+		
+		if (rowHeight > minRowHeight) {
+
+			jTable.setRowHeight(rowHeight);
+
+			// set table header row height
+			JTableHeader header = jTable.getTableHeader();
+			Dimension prefSize = header.getPreferredSize();
+			prefSize.height = rowHeight / 2;
+			header.setPreferredSize(prefSize);
+
+			if (prefSize.height >= minRowHeight) {
+				jTable.setTableHeader(header);
+			}
+			
+			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
+			// set font size to fit row size
+			adjustFontSizeToRowHeight(rowHeight);
+		}
+	}
+
+	private void adjustFontSizeToRowHeight(int rowHeight) {
+		jTable.setFont(jTable.getFont().deriveFont(rowHeight / 2));
 	}
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
