@@ -1,4 +1,5 @@
 package at.tugraz.iicm.matrixexplorer;
+import  java.util.prefs.*;
 
 import at.tugraz.iicm.matrixexplorer.algorithms.ReorderingAlgorithm;
 import at.tugraz.iicm.matrixexplorer.algorithms.TwoDimSort;
@@ -20,6 +21,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Timer;
@@ -36,6 +39,7 @@ import at.tugraz.iicm.matrixexplorer.ui.DragDropRowTableUI;
 import at.tugraz.iicm.matrixexplorer.ui.MainComponentListener;
 
 import javax.swing.GroupLayout.Alignment;
+import javax.print.DocFlavor.URL;
 import javax.swing.GroupLayout;
 
 /**
@@ -346,8 +350,12 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	@Action
 	public void onLoadButton() {
-
-		JFileChooser chooser = new JFileChooser();
+		
+		ProtectionDomain pd = MatrixExplorerView.class.getProtectionDomain();
+		CodeSource cs = pd.getCodeSource();
+		java.net.URL location = cs.getLocation();
+		Preferences prefs = Preferences.userRoot().node(getClass().getName());
+		JFileChooser chooser = new JFileChooser(prefs.get("last_used",location.getFile()+"../../data"));
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.setDialogTitle("Select Data File");
@@ -358,6 +366,8 @@ public class MatrixExplorerView extends FrameView {
 		if (file != null) {
 
 			String f = file.getAbsolutePath();
+		    prefs.put("last_used", file.getParent());
+
 			try {
 
 				Matrix matrix = DataSetReader.readDoubleMatrix(file);
