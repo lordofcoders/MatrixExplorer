@@ -1,5 +1,6 @@
 package at.tugraz.iicm.matrixexplorer;
-import  java.util.prefs.*;
+
+import java.util.prefs.*;
 
 import at.tugraz.iicm.matrixexplorer.algorithms.ReorderingAlgorithm;
 import at.tugraz.iicm.matrixexplorer.algorithms.TwoDimSort;
@@ -17,6 +18,8 @@ import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskMonitor;
 
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.MenuItem;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Timer;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,6 +38,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -44,11 +49,25 @@ import javax.swing.JOptionPane;
 import at.tugraz.iicm.matrixexplorer.ui.BertinVisualsGenerator;
 import at.tugraz.iicm.matrixexplorer.ui.DragDropRowTableUI;
 import at.tugraz.iicm.matrixexplorer.ui.MainComponentListener;
-
 import javax.swing.GroupLayout.Alignment;
+import javax.naming.InitialContext;
 import javax.print.DocFlavor.URL;
 import javax.swing.Box;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.JSlider;
+import javax.swing.JTextPane;
+import javax.swing.MenuElement;
+import javax.swing.SwingConstants;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.SystemColor;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.JTextField;
 
 /**
  * The application's main frame.
@@ -59,7 +78,9 @@ public class MatrixExplorerView extends FrameView {
 
 	private MatrixManager matrixManager;
 	private final static Logger logger = Logger.getLogger(MatrixExplorerView.class.getSimpleName());
-	private final static int minRowHeight = 20;
+	private int minRowHeight = 20;
+	private int startFontSize = 0;
+	private int scalingSliderStaringValue = 0;
 
 	/**
 	 * Construct the frame for the application.
@@ -69,7 +90,7 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	public MatrixExplorerView(SingleFrameApplication app) {
 		super(app);
-		
+
 		initComponents();
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_CIRCLES);
 
@@ -101,6 +122,7 @@ public class MatrixExplorerView extends FrameView {
 		idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
 		statusAnimationLabel.setIcon(idleIcon);
 		progressBar.setVisible(false);
+		scalingSliderStaringValue = scalingSlider.getValue();
 
 		// connecting action tasks to status bar via TaskMonitor
 		TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
@@ -133,8 +155,15 @@ public class MatrixExplorerView extends FrameView {
 			}
 		});
 
+		scalingSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				scaleFonts();
+			}
+		});
+
 		// set the row DnD works.
 		jTable.setUI(new DragDropRowTableUI());
+		jTable.doLayout();
 		jScrollPane1.addComponentListener(new MainComponentListener(this));
 	}
 
@@ -275,6 +304,22 @@ public class MatrixExplorerView extends FrameView {
 
 		menuBar.add(jMenu1);
 
+		JTextPane scalingText = new JTextPane();
+		scalingText.setBackground(SystemColor.menu);
+		scalingText.setText("Scaling");
+		jMenu1.add(scalingText);
+
+		scalingSlider = new JSlider();
+		scalingSlider.setToolTipText("");
+		scalingSlider.setPaintTicks(true);
+		scalingSlider.setMajorTickSpacing(25);
+		scalingSlider.setPaintLabels(true);
+
+		scalingSlider.setValue(100);
+		scalingSlider.setMinimum(50);
+		scalingSlider.setMaximum(200);
+		jMenu1.add(scalingSlider);
+
 		buttonDo2DSort.setAction(actionMap.get("resetMatrix")); // NOI18N
 		buttonDo2DSort.setText(resourceMap.getString("buttonDo2DSort.text")); // NOI18N
 		buttonDo2DSort.setName("buttonDo2DSort"); // NOI18N
@@ -358,12 +403,12 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	@Action
 	public void onLoadButton() {
-		
+
 		ProtectionDomain pd = MatrixExplorerView.class.getProtectionDomain();
 		CodeSource cs = pd.getCodeSource();
 		java.net.URL location = cs.getLocation();
 		Preferences prefs = Preferences.userRoot().node(getClass().getName());
-		JFileChooser chooser = new JFileChooser(prefs.get("last_used",location.getFile()+"../../data"));
+		JFileChooser chooser = new JFileChooser(prefs.get("last_used", location.getFile() + "../../data"));
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.setDialogTitle("Select Data File");
@@ -374,7 +419,7 @@ public class MatrixExplorerView extends FrameView {
 		if (file != null) {
 
 			String f = file.getAbsolutePath();
-		    prefs.put("last_used", file.getParent());
+			prefs.put("last_used", file.getParent());
 
 			try {
 			      JTextField delimiter = new JTextField(2);
@@ -405,21 +450,7 @@ public class MatrixExplorerView extends FrameView {
 			      if (result == JOptionPane.OK_OPTION) {
 
 	
-//				final JFrame parent = new JFrame();
-//		        JButton button = new JButton();
-//
-//		        button.setText("Click me to show dialog!");
-//		        parent.add(button);
-//		        parent.pack();
-//		        parent.setVisible(true);
-//
-//		        button.addActionListener(new java.awt.event.ActionListener() {
-//		            
-//		            public void actionPerformed(java.awt.event.ActionEvent evt) {
-//		                String name = JOptionPane.showInputDialog(parent,
-//		                        "What is your name?", null);
-//		            }
-//		        });
+
 				Matrix matrix = DataSetReader.readDoubleMatrix(file,echaracter.getText(),delimiter.getText(),encodingStrings[encoding.getSelectedIndex()]);
 				matrixManager = new MatrixManager(matrix);
 				((MatrixTableModel) jTable.getModel()).setMatrix(matrixManager.getMatrix());
@@ -437,6 +468,7 @@ public class MatrixExplorerView extends FrameView {
 			fitTableToViewportSize();
 			jTable.updateUI();
 			jTable.setUI(new DragDropRowTableUI());
+			jTable.doLayout();
 		}
 	}
 
@@ -527,6 +559,7 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	@Action
 	public void on2DSort() {
+
 		getApplication().getContext().getTaskService().execute(new Task(getApplication()) {
 
 			@Override
@@ -544,10 +577,10 @@ public class MatrixExplorerView extends FrameView {
 				matrixManager.setMatrix((Matrix) result);
 				((MatrixTableModel) jTable.getModel()).setMatrix(matrixManager.getMatrix());
 				((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
+				jTable.doLayout();
 			}
 
 		});
-
 	}
 
 	/**
@@ -560,9 +593,56 @@ public class MatrixExplorerView extends FrameView {
 		((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
 	}
 
-	public void fitTableToViewportSize() {
+	public void scaleFonts() {
 
-		jTable.setFillsViewportHeight(true);
+		int selectedScaling = scalingSlider.getValue();
+		float scalingValue = (float) selectedScaling / 100;
+
+		MenuElement[] menuElements = menuBar.getSubElements();
+		for (MenuElement elem : menuElements) {
+
+			scaleMenuElement(elem, scalingValue);
+			MenuElement[] subElements = elem.getSubElements();
+
+			// foreach popup menu
+			for (MenuElement sub : subElements) {
+
+				// get its items
+				MenuElement[] popupMenuElems = sub.getSubElements();
+				for (MenuElement ssub : popupMenuElems) {
+					scaleMenuElement(ssub, scalingValue);
+				}
+			}
+		}
+
+		// scale table header
+		((MatrixTable) jTable).setMatrixTableHeaderFontSize(startFontSize, scalingValue);
+		JTableHeader header = ((MatrixTable) jTable).getTableHeader();
+		Dimension headerDim = header.getPreferredSize();
+		headerDim.height = (int) (Math.ceil(startFontSize) * scalingValue);
+		header.setPreferredSize(headerDim);
+		minRowHeight = (int) (Math.ceil(startFontSize) + 20 * scalingValue);
+
+		// now scale table fonts
+		jTable.setFont(jTable.getFont().deriveFont((float) startFontSize * scalingValue));
+		fitTableToViewportSize();
+		mainPanel.updateUI();
+	}
+
+	private void scaleMenuElement(MenuElement elem, float scalingValue) {
+
+		Font menuElementFont = elem.getComponent().getFont();
+		int fontSize = menuElementFont.getSize();
+
+		if (startFontSize <= 0) {
+			startFontSize = fontSize;
+		}
+
+		Font scaledFont = menuElementFont.deriveFont((float) startFontSize * scalingValue);
+		elem.getComponent().setFont(scaledFont);
+	}
+
+	public void fitTableToViewportSize() {
 
 		// calculate ideal row height for current window size
 		Rectangle bounds = jScrollPane1.getBounds();
@@ -574,7 +654,7 @@ public class MatrixExplorerView extends FrameView {
 		}
 
 		int rowHeight = ((int) Math.ceil(currentHeight) / (rowCount + 1));
-		
+
 		if (rowHeight > minRowHeight) {
 
 			jTable.setRowHeight(rowHeight);
@@ -582,14 +662,11 @@ public class MatrixExplorerView extends FrameView {
 			// set table header row height
 			JTableHeader header = jTable.getTableHeader();
 			Dimension prefSize = header.getPreferredSize();
-			prefSize.height = rowHeight / 2;
-			header.setPreferredSize(prefSize);
 
-			if (prefSize.height >= minRowHeight) {
-				jTable.setTableHeader(header);
-			}
-			
-			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			int headerHeight = rowHeight;
+
+			prefSize.height = headerHeight;
+			header.setPreferredSize(prefSize);
 
 			// set font size to fit row size
 			adjustFontSizeToRowHeight(rowHeight);
@@ -597,7 +674,11 @@ public class MatrixExplorerView extends FrameView {
 	}
 
 	private void adjustFontSizeToRowHeight(int rowHeight) {
-		jTable.setFont(jTable.getFont().deriveFont(rowHeight / 2));
+		if (scalingSlider.getValue() != scalingSliderStaringValue) {
+			// if no scaling has been set, row height is defined by window size
+			jTable.setFont(jTable.getFont().deriveFont(rowHeight / 2));
+		}
+		// else table row height will be dependent on font size
 	}
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
@@ -629,4 +710,5 @@ public class MatrixExplorerView extends FrameView {
 	private int busyIconIndex = 0;
 
 	private JDialog aboutBox;
+	private JSlider scalingSlider;
 }
