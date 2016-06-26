@@ -28,18 +28,26 @@ import java.util.logging.Logger;
 import javax.swing.Timer;
 import javax.swing.table.JTableHeader;
 import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTable;
-
+import javax.swing.JTextField;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane; 
 import at.tugraz.iicm.matrixexplorer.ui.BertinVisualsGenerator;
 import at.tugraz.iicm.matrixexplorer.ui.DragDropRowTableUI;
 import at.tugraz.iicm.matrixexplorer.ui.MainComponentListener;
 
 import javax.swing.GroupLayout.Alignment;
 import javax.print.DocFlavor.URL;
+import javax.swing.Box;
 import javax.swing.GroupLayout;
 
 /**
@@ -369,15 +377,57 @@ public class MatrixExplorerView extends FrameView {
 		    prefs.put("last_used", file.getParent());
 
 			try {
+			      JTextField delimiter = new JTextField(2);
+			      JTextField echaracter = new JTextField(2);
+			      String[] encodingStrings = { 
+			    		  "US-ASCII",
+			    		  "ISO-8859-1",
+			    		  "UTF-8",
+			    		  "UTF-16BE",
+			    		  "UTF-16LE",
+			    		  "UTF-16"};			     
+			    //Create the combo box, select item at index 4.
+			    //Indices start at 0, so 4 specifies the pig.
+			    JComboBox encoding = new JComboBox(encodingStrings);
+			    encoding.setSelectedIndex(2);
+			      JPanel myPanel = new JPanel();
+			      myPanel.add(new JLabel("Encoding:"));
+			      myPanel.add(encoding);
+			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
+			      myPanel.add(new JLabel("Delimiter:"));
+			      myPanel.add(delimiter);
+			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
+			      myPanel.add(new JLabel("Escape Character"));
+			      myPanel.add(echaracter);
 
-				Matrix matrix = DataSetReader.readDoubleMatrix(file);
+			      int result = JOptionPane.showConfirmDialog(null, myPanel, 
+			               "CSV Import Settings", JOptionPane.OK_CANCEL_OPTION);
+			      if (result == JOptionPane.OK_OPTION) {
+
+	
+//				final JFrame parent = new JFrame();
+//		        JButton button = new JButton();
+//
+//		        button.setText("Click me to show dialog!");
+//		        parent.add(button);
+//		        parent.pack();
+//		        parent.setVisible(true);
+//
+//		        button.addActionListener(new java.awt.event.ActionListener() {
+//		            
+//		            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//		                String name = JOptionPane.showInputDialog(parent,
+//		                        "What is your name?", null);
+//		            }
+//		        });
+				Matrix matrix = DataSetReader.readDoubleMatrix(file,echaracter.getText(),delimiter.getText(),encodingStrings[encoding.getSelectedIndex()]);
 				matrixManager = new MatrixManager(matrix);
 				((MatrixTableModel) jTable.getModel()).setMatrix(matrixManager.getMatrix());
 				((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
 
 				// BertinVisualsGenerator ber = new BertinVisualsGenerator();
 				// ber.drawGraphics(matrix);
-
+			      }
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(mainPanel, "Could not read input data from file " + f,
 						"Error in reading input data", JOptionPane.ERROR_MESSAGE);
