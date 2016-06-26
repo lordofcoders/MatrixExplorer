@@ -1,8 +1,10 @@
 at/tugraz/iicm/matrixexplorer/MatrixExplorerView$5.class
 at/tugraz/iicm/matrixexplorer/data/Matrix.class
+at/tugraz/iicm/matrixexplorer/MatrixExplorerApp.class
 at/tugraz/iicm/matrixexplorer/ui/BertinCellRenderer.class
 at/tugraz/iicm/matrixexplorer/ui/MatrixTableModel.class
 at/tugraz/iicm/matrixexplorer/MatrixExplorerView$4.class
+at/tugraz/iicm/matrixexplorer/ui/MainComponentListener.class
 at/tugraz/iicm/matrixexplorer/MatrixExplorerView$2.class
 at/tugraz/iicm/matrixexplorer/MatrixExplorerView$3.class
 at/tugraz/iicm/matrixexplorer/algorithms/ReorderingAlgorithm.class
@@ -13,10 +15,14 @@ at/tugraz/iicm/matrixexplorer/ui/CircleCellRenderer$1.class
 at/tugraz/iicm/matrixexplorer/data/DataSetReader.class
 at/tugraz/iicm/matrixexplorer/MatrixExplorerView$6.class
 at/tugraz/iicm/matrixexplorer/ui/CircleCellRenderer.class
+at/tugraz/iicm/matrixexplorer/MatrixExplorerAboutBox.class
 at/tugraz/iicm/matrixexplorer/MatrixExplorerView$1.class
+at/tugraz/iicm/matrixexplorer/ui/MatrixTable.class
 at/tugraz/iicm/matrixexplorer/algorithms/TwoDimSort.class
 at/tugraz/iicm/matrixexplorer/ui/BarCellRenderer$1.class
+at/tugraz/iicm/matrixexplorer/ui/MatrixTableHeaderRenderer.class
 at/tugraz/iicm/matrixexplorer/ui/BarCellRenderer.class
 at/tugraz/iicm/matrixexplorer/ui/DragDropRowTableUI.class
+at/tugraz/iicm/matrixexplorer/MatrixExplorerView.class
 at/tugraz/iicm/matrixexplorer/data/FileFormat.class
 at/tugraz/iicm/matrixexplorer/ui/BertinVisualsGenerator.class

@@ -409,6 +409,7 @@ public class MatrixExplorerView extends FrameView {
 		java.net.URL location = cs.getLocation();
 		Preferences prefs = Preferences.userRoot().node(getClass().getName());
 		JFileChooser chooser = new JFileChooser(prefs.get("last_used", location.getFile() + "../../data"));
+
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.setDialogTitle("Select Data File");
@@ -444,7 +445,7 @@ public class MatrixExplorerView extends FrameView {
 			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
 			      myPanel.add(new JLabel("Escape Character"));
 			      myPanel.add(echaracter);
-
+			      delimiter.setText(",");
 			      int result = JOptionPane.showConfirmDialog(null, myPanel, 
 			               "CSV Import Settings", JOptionPane.OK_CANCEL_OPTION);
 			      if (result == JOptionPane.OK_OPTION) {
@@ -478,15 +479,48 @@ public class MatrixExplorerView extends FrameView {
 	 */
 	@Action
 	public void onSaveButton() {
-		JFileChooser chooser = new JFileChooser();
+		ProtectionDomain pd = MatrixExplorerView.class.getProtectionDomain();
+		CodeSource cs = pd.getCodeSource();
+		java.net.URL location = cs.getLocation();
+		Preferences prefs = Preferences.userRoot().node(getClass().getName());
+		JFileChooser chooser = new JFileChooser(prefs.get("last_used", location.getFile() + "../../data"));
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.setDialogTitle("Select File Location");
 		chooser.showSaveDialog(null);
 		File file = chooser.getSelectedFile();
 		if (file != null) {
+			prefs.put("last_used", file.getParent());
 			try {
-				DataSetWriter.writeDoubleMatrix(file.getCanonicalPath(), matrixManager.getMatrix());
+			      JTextField delimiter = new JTextField(2);
+			      JTextField echaracter = new JTextField(2);
+			      String[] encodingStrings = { 
+			    		  "US-ASCII",
+			    		  "ISO-8859-1",
+			    		  "UTF-8",
+			    		  "UTF-16BE",
+			    		  "UTF-16LE",
+			    		  "UTF-16"};			     
+			    //Create the combo box, select item at index 4.
+			    //Indices start at 0, so 4 specifies the pig.
+			    JComboBox encoding = new JComboBox(encodingStrings);
+			    encoding.setSelectedIndex(2);
+			      JPanel myPanel = new JPanel();
+			      myPanel.add(new JLabel("Encoding:"));
+			      myPanel.add(encoding);
+			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
+			      myPanel.add(new JLabel("Delimiter:"));
+			      myPanel.add(delimiter);
+			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
+			      myPanel.add(new JLabel("Escape Character"));
+			      myPanel.add(echaracter);
+			      delimiter.setText(",");
+			      int result = JOptionPane.showConfirmDialog(null, myPanel, 
+			               "CSV Export Settings", JOptionPane.OK_CANCEL_OPTION);
+			      if (result == JOptionPane.OK_OPTION) 
+			      {
+			    	  DataSetWriter.writeDoubleMatrix(file.getCanonicalPath(), matrixManager.getMatrix(),echaracter.getText(),delimiter.getText(),encodingStrings[encoding.getSelectedIndex()]);
+			      }
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(mainPanel, "Could not save matrix", "Error in saving",
 						JOptionPane.ERROR_MESSAGE);

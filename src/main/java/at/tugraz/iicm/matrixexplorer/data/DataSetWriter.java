@@ -18,43 +18,33 @@ public class DataSetWriter {
      * @param matrix the matrix to write
      * @throws IOException 
      */
-    public static void writeDoubleMatrix(String file, Matrix matrix) throws IOException {
+    public static void writeDoubleMatrix(String file, Matrix matrix,String eCharacter,String delimiter,String encoding) throws IOException {
 
         FileOutputStream outStream = new FileOutputStream(new File(file));
-        BufferedWriter outputBuffer = new BufferedWriter(new OutputStreamWriter(outStream));
+        BufferedWriter outputBuffer = new BufferedWriter(new OutputStreamWriter(outStream,encoding));
         // write first line, number of rows and number of columsn
-        outputBuffer.write(matrix.getMatrix().rows() + " " + matrix.getMatrix().columns());
-        outputBuffer.newLine();
-        // write rows
-        outputBuffer.write(FileFormat.ROW_HEADER);
-        outputBuffer.newLine();
-        for (int i = 0; i < matrix.getRowNames().size(); i++) {
-            outputBuffer.write(matrix.getRowNames().get(i));
-            if (i != matrix.getRowNames().size() - 1) {
-                outputBuffer.newLine();
-            }
-        }
-        // write cols
-        outputBuffer.newLine();
-        outputBuffer.write(FileFormat.COL_HEADER);
-        outputBuffer.newLine();
-        for (int i = 0; i < matrix.getColnames().size(); i++) {
+
+        
+        outputBuffer.write("RowTitles,");//empty column name at the beginning;
+
+         for (int i = 0; i < matrix.getColnames().size(); i++) {
             outputBuffer.write(matrix.getColnames().get(i));
             if (i != matrix.getColnames().size() - 1) {
-                outputBuffer.newLine();
+                outputBuffer.write(delimiter);
             }
         }
+         outputBuffer.newLine();
+
         // write csv data
-        outputBuffer.newLine();
-        outputBuffer.write(FileFormat.DATA_HEADER);
-        outputBuffer.newLine();
+
         for (int i = 0; i < matrix.getMatrix().rows(); i++) {
+            outputBuffer.write(matrix.getRowNames().get(i));
+            outputBuffer.write(delimiter);
             for (int j = 0; j < matrix.getMatrix().columns(); j++) {
                 outputBuffer.write("" + matrix.getMatrix().get(i, j));
                 if (j != matrix.getMatrix().columns() - 1) {
-                    outputBuffer.write(",");
+                    outputBuffer.write(delimiter);
                 }
-
             }
             if (i != matrix.getMatrix().rows() - 1) {
                 outputBuffer.newLine();
