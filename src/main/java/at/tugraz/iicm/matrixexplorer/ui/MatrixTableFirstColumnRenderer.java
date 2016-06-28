@@ -11,12 +11,12 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author Christin Seifert
  */
-public class MatrixTableHeaderRenderer implements TableCellRenderer {
+public class MatrixTableFirstColumnRenderer implements TableCellRenderer {
 
 	private int initialFontSize = 15;
 	private float fontScalingFactor = 1.0f;
 	
-	public MatrixTableHeaderRenderer(int initialFontSize, float fontScale) {
+	public MatrixTableFirstColumnRenderer(int initialFontSize, float fontScale) {
 		this.initialFontSize = initialFontSize;
 		this.fontScalingFactor = fontScale;
 	}
@@ -34,7 +34,7 @@ public class MatrixTableHeaderRenderer implements TableCellRenderer {
 		label.setBackground(Color.lightGray);
 		label.setOpaque(true);
 		label.setFont(label.getFont().deriveFont((float) initialFontSize * fontScalingFactor));
-		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setHorizontalAlignment(SwingConstants.LEFT);
 		
 		return label;
 	}

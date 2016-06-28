@@ -1,25 +1,7 @@
 package at.tugraz.iicm.matrixexplorer;
 
-import java.util.prefs.*;
-
-import at.tugraz.iicm.matrixexplorer.algorithms.ReorderingAlgorithm;
-import at.tugraz.iicm.matrixexplorer.algorithms.TwoDimSort;
-import at.tugraz.iicm.matrixexplorer.ui.MatrixTable;
-import at.tugraz.iicm.matrixexplorer.data.DataSetReader;
-import at.tugraz.iicm.matrixexplorer.data.DataSetWriter;
-import at.tugraz.iicm.matrixexplorer.data.Matrix;
-import at.tugraz.iicm.matrixexplorer.data.MatrixManager;
-import at.tugraz.iicm.matrixexplorer.ui.MatrixTableModel;
-import org.jdesktop.application.Action;
-import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.FrameView;
-import org.jdesktop.application.Task;
-import org.jdesktop.application.TaskMonitor;
-
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.MenuItem;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,46 +10,48 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Timer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
+import java.util.prefs.Preferences;
+
+import javax.swing.Box;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane; 
-import at.tugraz.iicm.matrixexplorer.ui.BertinVisualsGenerator;
+import javax.swing.MenuElement;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.JTableHeader;
+
+import org.jdesktop.application.Action;
+import org.jdesktop.application.FrameView;
+import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.Task;
+import org.jdesktop.application.TaskMonitor;
+
+import at.tugraz.iicm.matrixexplorer.algorithms.ReorderingAlgorithm;
+import at.tugraz.iicm.matrixexplorer.algorithms.TwoDimSort;
+import at.tugraz.iicm.matrixexplorer.data.DataSetReader;
+import at.tugraz.iicm.matrixexplorer.data.DataSetWriter;
+import at.tugraz.iicm.matrixexplorer.data.Matrix;
+import at.tugraz.iicm.matrixexplorer.data.MatrixManager;
 import at.tugraz.iicm.matrixexplorer.ui.DragDropRowTableUI;
 import at.tugraz.iicm.matrixexplorer.ui.MainComponentListener;
-import javax.swing.GroupLayout.Alignment;
-import javax.naming.InitialContext;
-import javax.print.DocFlavor.URL;
-import javax.swing.Box;
-import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.JSlider;
-import javax.swing.JTextPane;
-import javax.swing.MenuElement;
-import javax.swing.SwingConstants;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.SystemColor;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.JTextField;
+import at.tugraz.iicm.matrixexplorer.ui.MatrixTable;
+import at.tugraz.iicm.matrixexplorer.ui.MatrixTableModel;
 
 /**
  * The application's main frame.
@@ -78,7 +62,6 @@ public class MatrixExplorerView extends FrameView {
 
 	private MatrixManager matrixManager;
 	private final static Logger logger = Logger.getLogger(MatrixExplorerView.class.getSimpleName());
-	private int minRowHeight = 20;
 	private int startFontSize = 0;
 	private int scalingSliderStaringValue = 0;
 
@@ -157,14 +140,20 @@ public class MatrixExplorerView extends FrameView {
 
 		scalingSlider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				scaleFonts();
+				scaleMenuFonts();
+				scaleContent();
 			}
 		});
+
+		((MatrixTable) jTable).setScrollPane(jScrollPane1);
 
 		// set the row DnD works.
 		jTable.setUI(new DragDropRowTableUI());
 		jTable.doLayout();
-		jScrollPane1.addComponentListener(new MainComponentListener(this));
+
+		// catch window resize event
+		jScrollPane1.addComponentListener(new MainComponentListener((MatrixTable) jTable));
+		jScrollPane1.setAutoscrolls(true);
 	}
 
 	/**
@@ -304,22 +293,6 @@ public class MatrixExplorerView extends FrameView {
 
 		menuBar.add(jMenu1);
 
-		JTextPane scalingText = new JTextPane();
-		scalingText.setBackground(SystemColor.menu);
-		scalingText.setText("Scaling");
-		jMenu1.add(scalingText);
-
-		scalingSlider = new JSlider();
-		scalingSlider.setToolTipText("");
-		scalingSlider.setPaintTicks(true);
-		scalingSlider.setMajorTickSpacing(25);
-		scalingSlider.setPaintLabels(true);
-
-		scalingSlider.setValue(100);
-		scalingSlider.setMinimum(50);
-		scalingSlider.setMaximum(200);
-		jMenu1.add(scalingSlider);
-
 		buttonDo2DSort.setAction(actionMap.get("resetMatrix")); // NOI18N
 		buttonDo2DSort.setText(resourceMap.getString("buttonDo2DSort.text")); // NOI18N
 		buttonDo2DSort.setName("buttonDo2DSort"); // NOI18N
@@ -336,6 +309,23 @@ public class MatrixExplorerView extends FrameView {
 		buttonDo2DSort.add(jMenuItem3);
 
 		menuBar.add(buttonDo2DSort);
+
+		fontMenu = new JMenu("Fonts");
+		menuBar.add(fontMenu);
+
+		mntmMenuFontScale = new JMenuItem("Menu Font Scale");
+		fontMenu.add(mntmMenuFontScale);
+
+		scalingSlider = new JSlider();
+		fontMenu.add(scalingSlider);
+		scalingSlider.setToolTipText("");
+		scalingSlider.setPaintTicks(true);
+		scalingSlider.setMajorTickSpacing(25);
+		scalingSlider.setPaintLabels(true);
+
+		scalingSlider.setValue(100);
+		scalingSlider.setMinimum(100);
+		scalingSlider.setMaximum(200);
 
 		helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
 		helpMenu.setName("helpMenu"); // NOI18N
@@ -391,10 +381,6 @@ public class MatrixExplorerView extends FrameView {
 	}// </editor-fold>//GEN-END:initComponents
 
 	private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
-
-		fitTableToViewportSize();
-		jTable.updateUI();
-
 	}// GEN-LAST:event_jMenuItem1ActionPerformed
 
 	/**
@@ -423,50 +409,43 @@ public class MatrixExplorerView extends FrameView {
 			prefs.put("last_used", file.getParent());
 
 			try {
-			      JTextField delimiter = new JTextField(2);
-			      JTextField echaracter = new JTextField(2);
-			      String[] encodingStrings = { 
-			    		  "US-ASCII",
-			    		  "ISO-8859-1",
-			    		  "UTF-8",
-			    		  "UTF-16BE",
-			    		  "UTF-16LE",
-			    		  "UTF-16"};			     
-			    //Create the combo box, select item at index 4.
-			    //Indices start at 0, so 4 specifies the pig.
-			    JComboBox encoding = new JComboBox(encodingStrings);
-			    encoding.setSelectedIndex(2);
-			      JPanel myPanel = new JPanel();
-			      myPanel.add(new JLabel("Encoding:"));
-			      myPanel.add(encoding);
-			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
-			      myPanel.add(new JLabel("Delimiter:"));
-			      myPanel.add(delimiter);
-			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
-			      myPanel.add(new JLabel("Escape Character"));
-			      myPanel.add(echaracter);
-			      delimiter.setText(",");
-			      int result = JOptionPane.showConfirmDialog(null, myPanel, 
-			               "CSV Import Settings", JOptionPane.OK_CANCEL_OPTION);
-			      if (result == JOptionPane.OK_OPTION) {
+				JTextField delimiter = new JTextField(2);
+				JTextField echaracter = new JTextField(2);
+				String[] encodingStrings = { "US-ASCII", "ISO-8859-1", "UTF-8", "UTF-16BE", "UTF-16LE", "UTF-16" };
+				// Create the combo box, select item at index 4.
+				// Indices start at 0, so 4 specifies the pig.
+				JComboBox encoding = new JComboBox(encodingStrings);
+				encoding.setSelectedIndex(2);
+				JPanel myPanel = new JPanel();
+				myPanel.add(new JLabel("Encoding:"));
+				myPanel.add(encoding);
+				myPanel.add(Box.createVerticalStrut(15)); // a spacer
+				myPanel.add(new JLabel("Delimiter:"));
+				myPanel.add(delimiter);
+				myPanel.add(Box.createVerticalStrut(15)); // a spacer
+				myPanel.add(new JLabel("Escape Character"));
+				myPanel.add(echaracter);
+				delimiter.setText(",");
+				int result = JOptionPane.showConfirmDialog(null, myPanel, "CSV Import Settings",
+						JOptionPane.OK_CANCEL_OPTION);
+				if (result == JOptionPane.OK_OPTION) {
 
-	
+					Matrix matrix = DataSetReader.readDoubleMatrix(file, echaracter.getText(), delimiter.getText(),
+							encodingStrings[encoding.getSelectedIndex()]);
+					matrixManager = new MatrixManager(matrix);
+					((MatrixTableModel) jTable.getModel()).setMatrix(matrixManager.getMatrix());
+					((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
 
-				Matrix matrix = DataSetReader.readDoubleMatrix(file,echaracter.getText(),delimiter.getText(),encodingStrings[encoding.getSelectedIndex()]);
-				matrixManager = new MatrixManager(matrix);
-				((MatrixTableModel) jTable.getModel()).setMatrix(matrixManager.getMatrix());
-				((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
-
-				// BertinVisualsGenerator ber = new BertinVisualsGenerator();
-				// ber.drawGraphics(matrix);
-			      }
+					// BertinVisualsGenerator ber = new
+					// BertinVisualsGenerator();
+					// ber.drawGraphics(matrix);
+				}
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(mainPanel, "Could not read input data from file " + f,
 						"Error in reading input data", JOptionPane.ERROR_MESSAGE);
 				logger.log(Level.SEVERE, "error in reading input data from file " + f);
 			}
 
-			fitTableToViewportSize();
 			jTable.updateUI();
 			jTable.setUI(new DragDropRowTableUI());
 			jTable.doLayout();
@@ -492,35 +471,29 @@ public class MatrixExplorerView extends FrameView {
 		if (file != null) {
 			prefs.put("last_used", file.getParent());
 			try {
-			      JTextField delimiter = new JTextField(2);
-			      JTextField echaracter = new JTextField(2);
-			      String[] encodingStrings = { 
-			    		  "US-ASCII",
-			    		  "ISO-8859-1",
-			    		  "UTF-8",
-			    		  "UTF-16BE",
-			    		  "UTF-16LE",
-			    		  "UTF-16"};			     
-			    //Create the combo box, select item at index 4.
-			    //Indices start at 0, so 4 specifies the pig.
-			    JComboBox encoding = new JComboBox(encodingStrings);
-			    encoding.setSelectedIndex(2);
-			      JPanel myPanel = new JPanel();
-			      myPanel.add(new JLabel("Encoding:"));
-			      myPanel.add(encoding);
-			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
-			      myPanel.add(new JLabel("Delimiter:"));
-			      myPanel.add(delimiter);
-			      myPanel.add(Box.createVerticalStrut(15)); // a spacer
-			      myPanel.add(new JLabel("Escape Character"));
-			      myPanel.add(echaracter);
-			      delimiter.setText(",");
-			      int result = JOptionPane.showConfirmDialog(null, myPanel, 
-			               "CSV Export Settings", JOptionPane.OK_CANCEL_OPTION);
-			      if (result == JOptionPane.OK_OPTION) 
-			      {
-			    	  DataSetWriter.writeDoubleMatrix(file.getCanonicalPath(), matrixManager.getMatrix(),echaracter.getText(),delimiter.getText(),encodingStrings[encoding.getSelectedIndex()]);
-			      }
+				JTextField delimiter = new JTextField(2);
+				JTextField echaracter = new JTextField(2);
+				String[] encodingStrings = { "US-ASCII", "ISO-8859-1", "UTF-8", "UTF-16BE", "UTF-16LE", "UTF-16" };
+				// Create the combo box, select item at index 4.
+				// Indices start at 0, so 4 specifies the pig.
+				JComboBox encoding = new JComboBox(encodingStrings);
+				encoding.setSelectedIndex(2);
+				JPanel myPanel = new JPanel();
+				myPanel.add(new JLabel("Encoding:"));
+				myPanel.add(encoding);
+				myPanel.add(Box.createVerticalStrut(15)); // a spacer
+				myPanel.add(new JLabel("Delimiter:"));
+				myPanel.add(delimiter);
+				myPanel.add(Box.createVerticalStrut(15)); // a spacer
+				myPanel.add(new JLabel("Escape Character"));
+				myPanel.add(echaracter);
+				delimiter.setText(",");
+				int result = JOptionPane.showConfirmDialog(null, myPanel, "CSV Export Settings",
+						JOptionPane.OK_CANCEL_OPTION);
+				if (result == JOptionPane.OK_OPTION) {
+					DataSetWriter.writeDoubleMatrix(file.getCanonicalPath(), matrixManager.getMatrix(),
+							echaracter.getText(), delimiter.getText(), encodingStrings[encoding.getSelectedIndex()]);
+				}
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(mainPanel, "Could not save matrix", "Error in saving",
 						JOptionPane.ERROR_MESSAGE);
@@ -537,7 +510,7 @@ public class MatrixExplorerView extends FrameView {
 	public void onDisplayDataAsRaw() {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_NUMBERS);
 
-		fitTableToViewportSize();
+		jTable.doLayout();
 		jTable.updateUI();
 
 		// set the row DnD works.
@@ -552,7 +525,7 @@ public class MatrixExplorerView extends FrameView {
 	public void onDisplayDataAsCircles() {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_CIRCLES);
 
-		fitTableToViewportSize();
+		jTable.doLayout();
 		jTable.updateUI();
 
 		// set the row DnD works.
@@ -566,7 +539,7 @@ public class MatrixExplorerView extends FrameView {
 	public void onDisplayDataAsBars() {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_BARS);
 
-		fitTableToViewportSize();
+		jTable.doLayout();
 		jTable.updateUI();
 
 		// set the row DnD works.
@@ -581,7 +554,7 @@ public class MatrixExplorerView extends FrameView {
 	public void onDisplayAsBertinsVisuals() {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_BERTINS_VISUALS);
 
-		fitTableToViewportSize();
+		jTable.doLayout();
 		jTable.updateUI();
 
 		// set the row DnD works.
@@ -627,7 +600,7 @@ public class MatrixExplorerView extends FrameView {
 		((MatrixTableModel) jTable.getModel()).fireTableStructureChanged();
 	}
 
-	public void scaleFonts() {
+	public void scaleMenuFonts() {
 
 		int selectedScaling = scalingSlider.getValue();
 		float scalingValue = (float) selectedScaling / 100;
@@ -649,18 +622,20 @@ public class MatrixExplorerView extends FrameView {
 			}
 		}
 
+		menuBar.updateUI();
+	}
+
+	public void scaleContent() {
+
+		int selectedScaling = scalingSlider.getValue();
+		float scalingValue = (float) selectedScaling / 100;
+
 		// scale table header
 		((MatrixTable) jTable).setMatrixTableHeaderFontSize(startFontSize, scalingValue);
-		JTableHeader header = ((MatrixTable) jTable).getTableHeader();
-		Dimension headerDim = header.getPreferredSize();
-		headerDim.height = (int) (Math.ceil(startFontSize) * scalingValue);
-		header.setPreferredSize(headerDim);
-		minRowHeight = (int) (Math.ceil(startFontSize) + 20 * scalingValue);
 
 		// now scale table fonts
 		jTable.setFont(jTable.getFont().deriveFont((float) startFontSize * scalingValue));
-		fitTableToViewportSize();
-		mainPanel.updateUI();
+		jTable.doLayout();
 	}
 
 	private void scaleMenuElement(MenuElement elem, float scalingValue) {
@@ -674,45 +649,6 @@ public class MatrixExplorerView extends FrameView {
 
 		Font scaledFont = menuElementFont.deriveFont((float) startFontSize * scalingValue);
 		elem.getComponent().setFont(scaledFont);
-	}
-
-	public void fitTableToViewportSize() {
-
-		// calculate ideal row height for current window size
-		Rectangle bounds = jScrollPane1.getBounds();
-
-		double currentHeight = bounds.getHeight();
-		int rowCount = jTable.getModel().getRowCount();
-		if (rowCount <= 0) {
-			return;
-		}
-
-		int rowHeight = ((int) Math.ceil(currentHeight) / (rowCount + 1));
-
-		if (rowHeight > minRowHeight) {
-
-			jTable.setRowHeight(rowHeight);
-
-			// set table header row height
-			JTableHeader header = jTable.getTableHeader();
-			Dimension prefSize = header.getPreferredSize();
-
-			int headerHeight = rowHeight;
-
-			prefSize.height = headerHeight;
-			header.setPreferredSize(prefSize);
-
-			// set font size to fit row size
-			adjustFontSizeToRowHeight(rowHeight);
-		}
-	}
-
-	private void adjustFontSizeToRowHeight(int rowHeight) {
-		if (scalingSlider.getValue() != scalingSliderStaringValue) {
-			// if no scaling has been set, row height is defined by window size
-			jTable.setFont(jTable.getFont().deriveFont(rowHeight / 2));
-		}
-		// else table row height will be dependent on font size
 	}
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
@@ -745,4 +681,6 @@ public class MatrixExplorerView extends FrameView {
 
 	private JDialog aboutBox;
 	private JSlider scalingSlider;
+	private JMenu fontMenu;
+	private JMenuItem mntmMenuFontScale;
 }
