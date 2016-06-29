@@ -20,6 +20,8 @@ public class MainComponentListener extends ComponentAdapter {
 	}
 
 	public void componentResized(ComponentEvent e) {
-		
+		if(table != null) {
+			table.doLayout();
+		}
 	}
 }

@@ -52,6 +52,7 @@ import at.tugraz.iicm.matrixexplorer.ui.DragDropRowTableUI;
 import at.tugraz.iicm.matrixexplorer.ui.MainComponentListener;
 import at.tugraz.iicm.matrixexplorer.ui.MatrixTable;
 import at.tugraz.iicm.matrixexplorer.ui.MatrixTableModel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 /**
  * The application's main frame.
@@ -78,6 +79,7 @@ public class MatrixExplorerView extends FrameView {
 		((MatrixTable) jTable).setRenderMode(MatrixTable.RENDER_AS_CIRCLES);
 
 		jTable.updateUI();
+		jTable.setShowHorizontalLines(true);
 
 		// status bar initialization - message timeout, idle icon and busy
 		// animation, etc
@@ -106,7 +108,7 @@ public class MatrixExplorerView extends FrameView {
 		statusAnimationLabel.setIcon(idleIcon);
 		progressBar.setVisible(false);
 		scalingSliderStaringValue = scalingSlider.getValue();
-
+		
 		// connecting action tasks to status bar via TaskMonitor
 		TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
 		taskMonitor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
@@ -313,9 +315,6 @@ public class MatrixExplorerView extends FrameView {
 		fontMenu = new JMenu("Fonts");
 		menuBar.add(fontMenu);
 
-		mntmMenuFontScale = new JMenuItem("Menu Font Scale");
-		fontMenu.add(mntmMenuFontScale);
-
 		scalingSlider = new JSlider();
 		fontMenu.add(scalingSlider);
 		scalingSlider.setToolTipText("");
@@ -345,35 +344,35 @@ public class MatrixExplorerView extends FrameView {
 		statusAnimationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 		statusAnimationLabel.setName("statusAnimationLabel"); // NOI18N
 
-		progressBar.setName("progressBar"); // NOI18N
+		progressBar.setName("progressBar");
 
 		javax.swing.GroupLayout statusPanelLayout = new javax.swing.GroupLayout(statusPanel);
-		statusPanel.setLayout(statusPanelLayout);
-		statusPanelLayout
-				.setHorizontalGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-						.addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-						.addGroup(statusPanelLayout.createSequentialGroup().addContainerGap()
-								.addComponent(statusMessageLabel)
-								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 376,
-										Short.MAX_VALUE)
-								.addComponent(statusAnimationLabel).addContainerGap())
-						.addGroup(javax.swing.GroupLayout.Alignment.TRAILING,
-								statusPanelLayout.createSequentialGroup().addContainerGap(228, Short.MAX_VALUE)
-										.addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 160,
-												javax.swing.GroupLayout.PREFERRED_SIZE)
-										.addContainerGap()));
-		statusPanelLayout.setVerticalGroup(statusPanelLayout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+		statusPanelLayout.setHorizontalGroup(
+			statusPanelLayout.createParallelGroup(Alignment.TRAILING)
+				.addComponent(statusPanelSeparator, GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE)
 				.addGroup(statusPanelLayout.createSequentialGroup()
-						.addComponent(statusPanelSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2,
-								javax.swing.GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
-								javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-								.addComponent(statusMessageLabel).addComponent(statusAnimationLabel).addComponent(
-										progressBar, javax.swing.GroupLayout.PREFERRED_SIZE,
-										javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-						.addGap(3, 3, 3)));
+					.addContainerGap()
+					.addComponent(statusMessageLabel)
+					.addPreferredGap(ComponentPlacement.RELATED, 758, Short.MAX_VALUE)
+					.addComponent(statusAnimationLabel)
+					.addContainerGap())
+				.addGroup(statusPanelLayout.createSequentialGroup()
+					.addContainerGap(610, Short.MAX_VALUE)
+					.addComponent(progressBar, GroupLayout.PREFERRED_SIZE, 160, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap())
+		);
+		statusPanelLayout.setVerticalGroup(
+			statusPanelLayout.createParallelGroup(Alignment.TRAILING)
+				.addGroup(statusPanelLayout.createSequentialGroup()
+					.addComponent(statusPanelSeparator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(statusPanelLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(statusMessageLabel)
+						.addComponent(statusAnimationLabel)
+						.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+					.addGap(25))
+		);
+		statusPanel.setLayout(statusPanelLayout);
 
 		setComponent(mainPanel);
 		setMenuBar(menuBar);
@@ -682,5 +681,4 @@ public class MatrixExplorerView extends FrameView {
 	private JDialog aboutBox;
 	private JSlider scalingSlider;
 	private JMenu fontMenu;
-	private JMenuItem mntmMenuFontScale;
 }
