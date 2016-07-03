@@ -198,7 +198,6 @@ public class MatrixTable extends JTable {
 		}
 
 		setMatrixTableHeaderFontSize(this.headerInitialFontSize, this.headerFontScalingFactor);
-		System.out.println("Did Layout");
 	}
 
 	public void setMatrixTableHeaderFontSize(int initialFontSize, float scalingFactor) {
@@ -219,9 +218,6 @@ public class MatrixTable extends JTable {
 
 		if (columnCount <= 0 || scrollPane == null)
 			return false;
-
-		System.out.println("Table: " + this.getWidth());
-		System.out.println("ScrollPane: " + scrollPane.getViewport().getSize().getWidth());
 
 		if (this.currentTableWidth > scrollPane.getViewport().getSize().getWidth()) {
 			return true;
