@@ -1,0 +1,63 @@
+\chapter{Project Report}
+
+\section{Conversion to Maven Project}
+
+The focus at the beginning was to establish a solid base that can be used for subversion software, thus the decision was made to start with the conversion to a Maven project, so that later on no changes on the folder structure have to be made and it is easier to collaborate on the code. To convert an existing Java project to a Maven project, one has to remove all JAR dependencies from the existing project. After this is done, the project will obviously not compile anymore so it is, as  always, a good choice to make a backup before the modification. When tried to compile the application after the removal of the JARs, a lot of different error messages will be shown. These can be used to carefully look up the correct packages with respect to their versions from the Maven Repository. The new packages from the repository must be added to the central element of every Maven project: the pom.xml file. This file holds the whole build information and defines the dependencies. If a dependency is added correctly with the so called "artifactId" from the Maven Repository, the packages will automatically be downloaded when building the project with for example the command "mvn clean install".%\\\\
+
+%[1] $http://www.mvnrepository.com/$
+
+\section{JDK Update}
+
+The update to the latest JDK, which at this time is JDK 8u91, was uneventful and only a couple of adaptations had to be made. For example it was not allowed anymore to add an override annotation to interface methods. After downloading and installing the JDK and after the removal of the override annotation of all interface method implementations, the Matrix Explorer compiled fine and the port to the new JDK was complete.
+
+\section{Scalable UI}
+
+Involved Classes:
+\begin{itemize}
+	\item MatrixExplorerView.java
+	\item ui.MatrixTable.java
+	\item ui.MatrixTableHeaderRenderer.java
+	\item ui.MatrixTableFirstColumnRenderer.java (added)
+	\item ui.MainComponentListener.java (added)
+\end{itemize}
+
+The class MatrixExplorerView.java was the central element in all ui-related modifications, as it holds the view information and structure. For the UI adaptations the Eclipse WindowBuilder plugin was used. With this way it was easier to understand the layout and as there were sections in the code that stated that they are auto generated code that should not be modified by hand, it seemed to be the best choice to go with. First, a new popup menu was added to the top menu bar. It contains a slider which defines a scaling value in percent, ranging from 100 to 200 percent. The slider was added with the visual editor and the functionality was then bound with an added listener. When the scaling slider value is modified the listener registers that event and calls a scaling function. The problem with the scaling of the complete window was that each element must be scaled differently. There is a main loop that loops trough all menu elements, fetches their font objects if present and specify a new font size that is multiplied with the scaling slider value. The content section is scaled by one function: doLayout(), which is called by several triggers.
+
+One of the said triggers it the MainComponentListener class, which implements a listener for window resize events. If such an event is fired, the listener then registers that and calls the doLayout() function again.
+
+
+\subsection{Minimum Width and Height Principle}
+
+For the scaling of the table cells and their content the following decisions were made:
+\begin{itemize}
+	\item The Table always resizes to fill the whole content area on startup and on every window resize event
+	\item Every cell has a defined Minimum Width
+	\item Every cell has a defined Minimum Height
+	\item If one of these Constraints would be violated by the Resizing of the Application Window - Do not make Cells smaller and show Scrollbars instead
+	\item Cells grow with their Content
+\end{itemize}
+
+This behaviour gives the user control over the size of the cells as well as their content, by simply changing the window size and allows to see larger data sets than before. Furthermore it guarantees that the user is always able to see the content of the table, unlike before where they would shrink to unreadability when a dataset with many columns was loaded.
+
+\section{CSV Support and File Memory}
+
+Before this modification was implemented, the Matrix Explorer was only able to read and write files that must be constructed specially for the Matrix Explorer, which is time consuming. In the the current Version of the Matrix Explorer it is possible to load standard CSV files as well as modifying and saving them. The first row of the file is automatically interpreted as head line and is expected to contain the column names as strings. Following this principle, the first column of the file is expected to be another set of strings to be used as row labels. After a file is loaded the built in Java preferences are used to persistently remember where the user loaded the file from and on the next usage  of the Matrix Explorer the folder browser is automatically navigated to the remembered location. This is a small enhancement but makes a big difference in usability.\\\\
+
+Modified Classes:
+\begin{itemize}
+	\item MatrixExplorerView.java
+	\item data.DataSetReader.java
+	\item data.DataSetWriter.java
+\end{itemize}
+
+
+\section{Various Improvements and General Bug Fixes}
+
+One of the tiniest changes was the production of labels for the header row in the MatrixTableHeaderRenderer, which enabled the possibility to center the header text.
+
+\subsection{Row Movement Bug}
+As mentioned in \ref{sec:initial-state} the Matrix Explorer had some problems that made it unusable. One of the first things that were fixed, was the bug where it was not possible to freely move rows. After the row was moved by one index, an unhandled Index-Out-Of-Bounds Exception was thrown because the calculation of the new index of the row did not take the first column containing the row labels into account and was off by one.
+
+\subsection{Performance Improvement}
+
+In the MatrixTable class every cell gets a renderer assigned. Depening on the selected display mode a different renderer is used. In this way it is possible to render the data as circles or numbers and so on. Before the modification every cell had its very own renderer object, meaning that if a lot of cells are used, a lot of objects are instantiated, all doing the same. The project members decided to use only one renderer object for all cells of the same type, which is held and distributed by the MatrixTable class. This change made a noticeable difference in the fluidness of the row and cell movement.

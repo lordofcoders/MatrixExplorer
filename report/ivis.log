@@ -1,0 +1,17 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdftex 2016.5.31)  3 JUL 2016 19:35
+entering extended mode
+**C:/Users/Jakob/Desktop/survey/ivis.bib
+(C:/Users/Jakob/Desktop/survey/ivis.bib
+Missing character: There is no Ã in font cmr10!
+Missing character: There is no ¶ in font cmr10!
+
+! Undefined control sequence.
+l.14   booktitle    = "Proc.\ 10\textsuperscript
+                                                {th} International Conference
+? 
+! Emergency stop.
+l.14   booktitle    = "Proc.\ 10\textsuperscript
+                                                {th} International Conference
+End of file on the terminal!
+
+!  ==> Fatal error occurred, no output PDF file produced!

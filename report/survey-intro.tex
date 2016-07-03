@@ -1,0 +1,54 @@
+%----------------------------------------------------------------
+%
+%  File    :  survey-intro.tex
+%
+%  Author  :  Keith Andrews, IICM, TU Graz, Austria
+% 
+%  Created :  27 May 1993
+% 
+%  Changed :  16 Nov 2010
+% 
+%----------------------------------------------------------------
+
+
+\chapter{Introduction}
+
+\label{chap:Intro}
+
+
+\section{Bertin's Reorderable Matrix}
+
+The innovative mechanical device was built by Jaques Bertin, a french cartographer, in the mid 1960s to analyse tabular data. It was possible to take out and swap rows and columns of his matrix and reposition them. This interaction method enhanced the possibility for knowledge gain from the data, as it was easier to see clusters or patterns in the data. He used distinct building blocks with different looks for the cells of his matrix, so that he was able to encode information in them. The same principle is used by the Matrix Explorer.%\\\\
+
+%[1] $http://dataphys.org/list/bertins-reorderable-matrices$
+%[2] $https://de.wikipedia.org/wiki/Jacques_Bertin$
+
+
+\section{The Initial State of the Matrix Explorer}
+\label{sec:initial-state}
+
+The Matrix Explorer was made as Java desktop application back in 2010 by students of the same lecture as this project emerged from. Since then it had several problems with newer hard- and software, that made it impractical and unusable. One of the goals of the project was to fix the game breaking problems and to improve the usability of the application.\\\\
+
+Problems of the Matrix Explorer:
+\begin{itemize}
+	\item Could not move Rows farther than one Index
+	\item User Interface and Fonts very small on High Resolution Displays
+	\item Poor Performance when moving Colums or Rows
+	\item Could not remember the last Location of loaded Files
+	\item Used custom File Format, which must be constructed before use
+\end{itemize}
+
+
+\section{The Task}
+
+The project task was to make the Matrix Explorer usable again and pay special attention to the sclability of the application so that it also works on new high resolution displays. It should have a slider to give the user an option for adapting the scaling of the fonts and the content to his or her needs. The Matrix Explorer was designed and implemented a couple of years ago around the year 2010 and therefore did not utilise the newer versions of the JDK. Furthermore it did not use  any build system and had to be compiled either by an IDE or with Java commands. One of the explicit tasks was to make a Maven project out of the application.\\\\
+
+List of Major Tasks:
+\begin{itemize}
+	\item Convert to Maven Project
+	\item Update to latest JDK
+	\item Make UI scalable
+	\item Support CSV Format
+	\item Fix Bugs
+	\item Various Visual Improvements
+\end{itemize}
